@@ -10,6 +10,7 @@ from . import serializers
 class AccountViewSet(mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
                      mixins.CreateModelMixin,
+                     mixins.UpdateModelMixin,
                      viewsets.GenericViewSet):
     """
         API endpoint that allows accounts to be viewed.
@@ -26,6 +27,11 @@ class AccountViewSet(mixins.ListModelMixin,
     model = models.Account
     serializer_class = serializers.AccountSerializer
     queryset = models.Account.objects.all()
+    
+    def get_serializer_class(self):
+        if self.action == 'update':
+            return serializers.AccountUpdateSerializer
+        return serializers.AccountSerializer
 
 class FuzzyView():
     def _fuzzy_filter_x(self, x):
@@ -41,4 +47,4 @@ class FuzzyView():
         x = int(request.GET.get('x', 100))
         return HttpResponse(JSONRenderer().render(
                            {'x':x, 'fizzbuzz':[self._fuzzy_filter_x(i) for i in range(1, x + 1)]}))
-    
+
