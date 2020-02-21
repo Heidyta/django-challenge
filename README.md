@@ -1,23 +1,45 @@
-# django-challenge
-Django and Django RestFramework Coding Challenge for API developer candidates
+# django-challenge-solution
+This repository contains a solution of a challenge for a Django backend developer position. You can found the challenge [here](https://github.com/swagup-com/django-challenge)
 
-Hello, and welcome to the Django coding challenge! You'll find a set of instructions below that you must attempt to complete within 3 days. Clone this repository to start the challenge, and good luck! When completed, push your solution to a new repository, and send us a link.
+There are the challenge tasks and basic ideas to solve it:
 
-Within this repository, you will find a simple application with the ability to create and list accounts.
+>1- A way to filter accounts by `shipping_country` in the admin interface
 
-Here are some things we need help with:
+To complete this task I added to `AccountAdmin` class the follow line
 
-We have create, list and retrieve features but lack the ability to update. Introduce a new `PUT` endpoint at `/api/v1/accounts/{id}/` that receives a JSON body containing `phone`, `shipping_address1`, `shipping_address2`, `shipping_city`, `shipping_state`, `shipping_zip`,
+python
+list_filter = ['shipping_country']
+
+
+This is a `Django-Admin` feature that allow make filters in a specific model by some of their fields(in this case only `shipping_country`).
+
+In the admin interface of the model(`Account`) you will see the filter:
+`http://localhost:8000/admin/accounts/account/`
+
+>2- Introduce a new `PUT` endpoint at `/api/v1/accounts/{id}/` that receives a JSON body containing `phone`, `shipping_address1`, `shipping_address2`, `shipping_city`, `shipping_state`, `shipping_zip`,
 `shipping_country`. The feature should update the existing record and return a JSON body representing the new state of the account item.
 
-Also add a way to filter accounts by `shipping_country` in the admin interface
+To solve this issue, firstly, a new `Serializer` class was created to update methods in `Account`. This new serializer needs to make the `name` field `ReadOnly` to don't check the validation in the `request` body. Also, I overried the `update` method in the new `Serializer` just to update the specified fields in the challenge. Finally, in the `AccountViewSet`, was added `mixins.UpdateModelMixin` based-class to allow to make updates in the entity. Moreover, `get_serializer_class` method was overwritten to use the new `Serializer` if the action is a `update` one.
 
-Besides write a view responding to a `GET` to path `/api/v1/fizz-buzz/?x=25` that will write the results of running FizzBuzz program for numbers from 1 to x. 
-Looping them but for multiples of three print “Fizz” instead of the number and for the multiples of five print “Buzz”. For numbers which are multiples of both three and five print “FizzBuzz”. If the number is not divisible for three or five write the number.
-As you can see x is a querystring param and by default this number should be 100. The response will be a json with the following format:
 
-{"x": 100, "fizzbuzz": "here comes the result of your algorithm"}
+>3-write a view responding to a `GET` to path `/api/v1/fizz-buzz/?x=25` that will write the results of running FizzBuzz program for numbers from 1 to x.
 
-You may notice the lack of tests in the repo, maybe set a good example and add tests to your method if you have time. That way the other devs can copy-paste from your good example. Once done, go ahead and open a pull request again the repo.
+In this case, a new `View` was implemented with a simple algorithm to get the challenge request. The view is very simple, just take the `querystring` param and execute the `fuzzy` algorithm. Also the urls was changes (adding a new one) to allow make this request.
 
-Good luck again.
+You can see the action to solve this issue below. For more details, see the code.
+python
+def fuzzy(self, request):
+    x = int(request.GET.get('x', 100))
+    return HttpResponse(JSONRenderer().render({
+        'x': x,
+        'fizzbuzz': [self._fuzzy_filter_x(number) for number in range(1, x+1)]
+    }))
+
+
+In the lacks of tests, some tests were added to `tests.py` file in `accounts`. Firstly, in the `setUp` method you will see the creations of two simple accounts to make the correspond test.
+
+The first test check the `endpoint` to get all accounts created. Also, a update test was implemented to test the put feature with the first account storage. Finally, two very similar tests were implemented to test `fizz-buzz`, the main diference is, one of them make the test with a querystring param and the other one without it. All tests ran successfully.
+
+Solve the challenge was a very good and enjoable experience and I really spect good news.
+
+Thanks you.
